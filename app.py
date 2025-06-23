@@ -1,18 +1,37 @@
-import streamlit as st
-from pdf_extractor import PDFExtractor
+from agents import DocumentProcessingPipeline
+import os
 
-st.title("📄 PDF Extractor (with OCR fallback)")
+def interactive_document_chat():
+    print("===== Interactive Document Q&A and Summarization =====")
+    pdf_path = input("Enter the path to your PDF document: ").strip()
+    if not os.path.isfile(pdf_path):
+        print(f"File not found: {pdf_path}")
+        return
+    pipeline = DocumentProcessingPipeline(pdf_path)
+    print("\nDocument loaded and processed. You can now ask questions or type 'summary' to get a summary.")
+    print("Type 'exit' or 'quit' to end the conversation.")
+    print("Type 'clear' to reload the document.")
+    print("==================================\n")
+    while True:
+        user_input = input("\nYou: ").strip()
+        if user_input.lower() in ["exit", "quit"]:
+            print("Ending conversation...")
+            break
+        if user_input.lower() == "clear":
+            print("Reloading document...")
+            pipeline = DocumentProcessingPipeline(pdf_path)
+            print("Document reloaded.")
+            continue
+        if user_input.lower() == "summary":
+            print("\nSummary:\n" + pipeline.get_summary())
+            continue
+        # Otherwise, treat as a question
+        print("\nAssistant: ", end="", flush=True)
+        try:
+            answer = pipeline.ask_question(user_input)
+            print(answer)
+        except Exception as e:
+            print(f"\nError: {e}")
 
-pdf_file = st.file_uploader("Upload a PDF", type="pdf")
-pages_input = st.text_input("Pages to extract (e.g. 1,2,-1)", "")
-
-if pdf_file:
-    with open("temp.pdf", "wb") as f:
-        f.write(pdf_file.read())
-
-    extractor = PDFExtractor()
-    try:
-        result = extractor.extract_content("temp.pdf", pages_input)
-        st.text_area("Extracted Content", result, height=400)
-    except Exception as e:
-        st.error(f"Error: {e}")
+if __name__ == "__main__":
+    interactive_document_chat()

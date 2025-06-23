@@ -1,85 +1,36 @@
-# pdf-extraction-mcp
-# 🧾 PDF Content Extractor with OCR Support
+# Document Understanding System
 
-A Python-based tool that extracts content from PDF files, including scanned documents, using OCR (Tesseract). Includes both a **CLI interface** and an optional **Streamlit web UI** for ease of use.
+This project is a scalable, modular, and intelligent document understanding system. Users can upload documents (currently supporting PDFs), generate summaries, and ask questions based on the document's content.
 
----
+## Architecture
 
-## ✨ Features
+The system is built with a modular architecture, separating the API, document processing, and vector database services.
 
-- Extract text from **standard PDFs**
-- Extract text from **scanned PDFs** using **Tesseract OCR**
-- Support for selecting **specific pages** (including negative indexing like `-1` for last page)
-- Simple **command-line interface**
-- Optional **Streamlit-based web app**
+- **API (`api/`)**: A FastAPI application that exposes endpoints for document upload, summarization, and Q&A.
+- **Document Processor (`core/`)**: Handles PDF extraction, text chunking, and generating embeddings using LangChain.
+- **Qdrant Service (`services/`)**: Manages all interactions with the Qdrant vector database, including storage and retrieval of document vectors.
 
----
+## Features
 
-## 🚀 Quickstart
+- **Document Upload**: Upload PDF files via a REST API.
+- **Summarization**: Generate a concise summary of the entire document.
+- **Question Answering**: Ask questions about the document's content using a Retrieval-Augmented Generation (RAG) pipeline.
 
-### 1. Clone the repository
+## Setup
 
-```bash
-git clone https://github.com/<your-username>/pdf-extraction-mcp.git
-cd pdf-extraction-mcp
-2. Install dependencies
-We recommend using a virtual environment:
+1. **Install dependencies**:
+   ```sh
+   pip install -r requirements.txt
+   ```
+2. **Set up environment variables**:
+   Create a `.env` file and add your `OPENAI_API_KEY`.
+3. **Run the application**:
+   ```sh
+   uvicorn api.main:app --reload
+   ```
 
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+## Usage
 
-pip install -r requirements.txt
-Make sure you have Tesseract OCR installed:
-
-macOS: brew install tesseract
-Ubuntu: sudo apt install tesseract-ocr
-Windows: Download installer
-🛠 Usage
-
-✅ Command Line Interface
-python main.py /path/to/file.pdf --pages "1,2,-1"
---pages is optional. Use comma-separated values. Negative indices are supported (e.g., -1 = last page).
-🌐 Streamlit Web App
-Run the app:
-
-streamlit run app.py
-Then open http://localhost:8501 in your browser.
-
-📁 Project Structure
-
-pdf-extraction-mcp/
-├── pdf_extraction/
-│   ├── __init__.py
-│   ├── pdf_extractor.py    # Core logic
-│   └── server.py            # Optional server interface
-├── main.py                  # CLI entry point
-├── app.py                   # Streamlit interface
-├── requirements.txt
-├── setup.py (optional)
-└── README.md
-🧪 Example Output
-
-Page 1:
-Lorem ipsum dolor sit amet...
-
-Page 2:
-(Scanned image text via OCR)
-合同书
-这是测试页。
-🧱 Dependencies
-
-PyPDF2
-pytesseract
-pymupdf
-Pillow
-streamlit (for UI)
-Install with:
-
-pip install -r requirements.txt
-📝 License
-
-MIT License.
-
-👤 Author
-
-Built by Aditya. Feel free to contribute or open issues!
+- **Upload a document**: `POST /upload`
+- **Summarize a document**: `GET /summarize/{document_id}`
+- **Ask a question**: `POST /ask`
