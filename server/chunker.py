@@ -11,9 +11,9 @@ def chunk_text(text: str, chunk_size: int = 500) -> List[str]:
         text: The input text to chunk.
         chunk_size: The maximum size of each chunk (default: 500).
     Returns:
-        List of text chunks.
+        List of text chunks (as strings).
     """
-    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+    return [str(text[i:i+chunk_size]) for i in range(0, len(text), chunk_size)]
 
 if __name__ == "__main__":
     mcp.run(transport="stdio") 

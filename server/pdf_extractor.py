@@ -4,6 +4,7 @@ from PIL import Image
 import fitz
 import io
 from typing import List, Optional
+from mcp.server.fastmcp import FastMCP
 
 class PDFExtractor:
     """
@@ -96,3 +97,13 @@ class PDFExtractor:
             return text
         except Exception as e:
             raise ValueError(f"Failed to extract PDF content: {str(e)}")
+
+mcp = FastMCP("pdf_extractor")
+extractor = PDFExtractor()
+
+@mcp.tool()
+def extract_pdf_contents(pdf_path: str, pages: str = None) -> str:
+    return extractor.extract_content(pdf_path, pages)
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
