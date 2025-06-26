@@ -54,11 +54,11 @@ class DocumentProcessingPipeline:
         print(f"[DEBUG] Extracted text type: {type(self.text)}, value: {str(self.text)[:200]}")
         # 2. Chunk text
         self.chunks = self._run_async(self._call_mcp_tool(
-            "server/chunker.py", "chunk_text", {"text": self.text, "chunk_size": self.chunk_size}
+            "server/pdf_processing_server.py", "chunk_text", {"text": self.text, "chunk_size": self.chunk_size}
         ))
         # 3. Embed chunks
         self.embeddings = self._run_async(self._call_mcp_tool(
-            "server/embedder.py", "embed_chunks", {"text_chunks": self.chunks}
+            "server/pdf_processing_server.py", "embed_chunks", {"text_chunks": self.chunks}
         ))
         # 4. Store in vector DB
         self._run_async(self._call_mcp_tool(
@@ -79,14 +79,14 @@ class DocumentProcessingPipeline:
             if all(isinstance(t, dict) and "text" in t for t in text):
                 text = [t["text"] for t in text]
         summary = self._run_async(self._call_mcp_tool(
-            "server/summarizer.py", "summarize_text", {"text": text}
+            "server/summarizer_qna_server.py", "summarize_text", {"text": text}
         ))[0]
         return summary
 
     def ask_question(self, question: str, top_k: int = 5) -> str:
         # 1. Embed question
         q_embedding = self._run_async(self._call_mcp_tool(
-            "server/embedder.py", "embed_chunks", {"text_chunks": [question]}
+            "server/pdf_processing_server.py", "embed_chunks", {"text_chunks": [question]}
         ))[0]
         # 2. Retrieve relevant chunks
         relevant_chunks = self._run_async(self._call_mcp_tool(
@@ -103,10 +103,10 @@ class DocumentProcessingPipeline:
         ]
         # 3. QnA
         answer = self._run_async(self._call_mcp_tool(
-            "server/qna.py", "answer_question", {
+            "server/summarizer_qna_server.py", "answer_question", {
                 "doc_id": self.doc_id,
                 "question": question,
-                "context": "\n".join(relevant_chunks)
+                "top_k": top_k
             }
         ))[0]
         return answer 

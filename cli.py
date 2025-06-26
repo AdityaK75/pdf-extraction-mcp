@@ -1,4 +1,3 @@
-import argparse
 import os
 from mcp.client.stdio import stdio_client, StdioServerParameters
 from mcp.client.session import ClientSession
@@ -44,13 +43,13 @@ def run_async(coro):
 def mcp_qna(pdf_path, question, top_k=5):
     # 1. Chunk the PDF
     chunks = run_async(call_mcp_tool(
-        "server/chunker.py",
+        "server/pdf_processing_server.py",
         "chunk_pdf",
         {"pdf_path": pdf_path}
     ))
     # 2. Embed the chunks
     embeddings = run_async(call_mcp_tool(
-        "server/embedder.py",
+        "server/pdf_processing_server.py",
         "embed_chunks",
         {"text_chunks": chunks}
     ))
@@ -63,7 +62,7 @@ def mcp_qna(pdf_path, question, top_k=5):
     ))
     # 4. Embed the question
     q_embedding = run_async(call_mcp_tool(
-        "server/embedder.py",
+        "server/pdf_processing_server.py",
         "embed_chunks",
         {"text_chunks": [question]}
     ))[0]
@@ -75,7 +74,7 @@ def mcp_qna(pdf_path, question, top_k=5):
     ))
     # 6. Call QnA service
     answer = run_async(call_mcp_tool(
-        "server/qna.py",
+        "server/summarizer_qna_server.py",
         "answer_question",
         {"question": question, "context": "\n".join(relevant_chunks)}
     ))
