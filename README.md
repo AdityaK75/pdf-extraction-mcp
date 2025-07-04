@@ -1,36 +1,60 @@
-# Document Understanding System
+# MCP PDF Assistant
 
-This project is a scalable, modular, and intelligent document understanding system. Users can upload documents (currently supporting PDFs), generate summaries, and ask questions based on the document's content.
-
-## Architecture
-
-The system is built with a modular architecture, separating the API, document processing, and vector database services.
-
-- **API (`api/`)**: A FastAPI application that exposes endpoints for document upload, summarization, and Q&A.
-- **Document Processor (`core/`)**: Handles PDF extraction, text chunking, and generating embeddings using LangChain.
-- **Qdrant Service (`services/`)**: Manages all interactions with the Qdrant vector database, including storage and retrieval of document vectors.
+A modular, microservice-based PDF assistant using MCP (Machine Control Protocol) microservices for PDF extraction, chunking, embedding, vector storage, QnA, and summarization. Supports both CLI and Streamlit UI, with robust OpenTelemetry tracing (Arize Phoenix) and a LangChain-style pipeline abstraction.
 
 ## Features
-
-- **Document Upload**: Upload PDF files via a REST API.
-- **Summarization**: Generate a concise summary of the entire document.
-- **Question Answering**: Ask questions about the document's content using a Retrieval-Augmented Generation (RAG) pipeline.
+- **PDF Extraction, Chunking, Embedding, Vector Storage** via MCP microservices
+- **QnA and Summarization** with RAG and fallback to LLM
+- **Streamlit UI** and **CLI** interface
+- **OpenTelemetry Tracing** with Arize Phoenix
+- **Modular, observable, and extensible pipeline**
 
 ## Setup
-
-1. **Install dependencies**:
-   ```sh
+1. **Clone the repo:**
+   ```bash
+   git clone https://github.com/AdityaK75/pdf-extraction-mcp.git
+   cd pdf-extraction-mcp/mcp-pdf-ectractor
+   ```
+2. **Create and activate a virtual environment:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+3. **Install dependencies:**
+   ```bash
    pip install -r requirements.txt
    ```
-2. **Set up environment variables**:
-   Create a `.env` file and add your `OPENAI_API_KEY`.
-3. **Run the application**:
-   ```sh
-   uvicorn api.main:app --reload
-   ```
+4. **Set environment variables:**
+   - `PHOENIX_ENDPOINT` (Arize Phoenix collector endpoint)
+   - `PHOENIX_API_KEY` (if required)
+   - `OPENAI_API_KEY` (for LLM and embedding)
 
-## Usage
+## Running the App
+### Start MCP Servers
+```bash
+./start_mcp_servers.sh
+```
 
-- **Upload a document**: `POST /upload`
-- **Summarize a document**: `GET /summarize/{document_id}`
-- **Ask a question**: `POST /ask`
+### Run Streamlit UI
+```bash
+streamlit run app_streamlit.py
+```
+
+### Run CLI
+```bash
+python cli.py
+```
+
+## Deployment
+- **Streamlit Community Cloud:** Push to GitHub, connect, and set env vars in the UI.
+- **Docker/Cloud:** Use a Dockerfile and set env vars as needed.
+
+## Project Structure
+- `app_streamlit.py` — Streamlit UI
+- `cli.py` — Command-line interface
+- `modules/` — Pipeline and orchestration logic
+- `server/` — MCP microservices (extractor, chunker, embedder, vector store, etc.)
+- `start_mcp_servers.sh` — Script to launch all MCP servers
+
+## License
+MIT
