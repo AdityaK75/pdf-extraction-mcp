@@ -2,23 +2,13 @@ import streamlit as st
 from modules.pipeline import DocumentProcessingPipeline
 import tempfile
 import os
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from arize.phoenix.opentelemetry import PhoenixSpanExporter
+from phoenix.otel import register
 
-PHOENIX_ENDPOINT = os.getenv("PHOENIX_ENDPOINT")
-PHOENIX_API_KEY = os.getenv("PHOENIX_API_KEY")
-
-if PHOENIX_ENDPOINT and PHOENIX_API_KEY:
-    provider = TracerProvider()
-    trace.set_tracer_provider(provider)
-    phoenix_exporter = PhoenixSpanExporter(
-        endpoint=PHOENIX_ENDPOINT,
-        api_key=PHOENIX_API_KEY,
-    )
-    span_processor = BatchSpanProcessor(phoenix_exporter)
-    provider.add_span_processor(span_processor)
+register(
+    endpoint=os.getenv("PHOENIX_ENDPOINT"),
+    project_name="pdf-assistant-streamlit",
+    headers={"authorization": f"Bearer {os.getenv('PHOENIX_API_KEY')}"} if os.getenv('PHOENIX_API_KEY') else None
+)
 
 st.set_page_config(page_title="PDF QnA & Summarizer (MCP-powered)")
 st.title("PDF QnA & Summarizer (MCP-powered)")

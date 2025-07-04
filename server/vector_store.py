@@ -72,10 +72,9 @@ def add_document(doc_id: str, chunks: List[str], embeddings: List[str], metadata
     return f"Document '{doc_id}' stored."
 
 @mcp.tool()
-def search_embeddings(doc_id: str, query_embedding: str, top_k: int = 5) -> List[str]:
-    # query_embedding is a JSON string, decode it
-    embedding = json.loads(query_embedding) if isinstance(query_embedding, str) else query_embedding
-    return store.query_similar(doc_id, embedding, top_k)
+def search_embeddings(doc_id: str, query_embedding: list, top_k: int = 5) -> List[str]:
+    # query_embedding is now a list of floats
+    return store.query_similar(doc_id, query_embedding, top_k)
 
 @mcp.tool()
 def delete_document(doc_id: str) -> str:

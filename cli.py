@@ -7,20 +7,24 @@ import asyncio
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from arize.phoenix.opentelemetry import PhoenixSpanExporter
+from phoenix.trace.exporter import HttpExporter
+import nest_asyncio
+from phoenix.otel import register
 
 PHOENIX_ENDPOINT = os.getenv("PHOENIX_ENDPOINT")
 PHOENIX_API_KEY = os.getenv("PHOENIX_API_KEY")
 
-if PHOENIX_ENDPOINT and PHOENIX_API_KEY:
-    provider = TracerProvider()
-    trace.set_tracer_provider(provider)
-    phoenix_exporter = PhoenixSpanExporter(
-        endpoint=PHOENIX_ENDPOINT,
-        api_key=PHOENIX_API_KEY,
-    )
-    span_processor = BatchSpanProcessor(phoenix_exporter)
-    provider.add_span_processor(span_processor)
+register(
+    endpoint=os.getenv("PHOENIX_ENDPOINT"),
+    project_name="pdf-assistant-cli",
+    headers={"authorization": f"Bearer {os.getenv('PHOENIX_API_KEY')}"} if os.getenv('PHOENIX_API_KEY') else None
+)
+
+# Patch HttpExporter to add a dummy shutdown method if missing
+if not hasattr(HttpExporter, 'shutdown'):
+    def _dummy_shutdown(self):
+        pass
+    HttpExporter.shutdown = _dummy_shutdown
 
 # Helper to call an MCP tool
 async def call_mcp_tool(server_script, tool_name, arguments):
@@ -37,7 +41,8 @@ def run_async(coro):
     except RuntimeError:
         loop = None
     if loop and loop.is_running():
-        return asyncio.ensure_future(coro)
+        nest_asyncio.apply()
+        return loop.run_until_complete(coro)
     else:
         return asyncio.run(coro)
 

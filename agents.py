@@ -22,8 +22,9 @@ def run_async(coro):
     except RuntimeError:
         loop = None
     if loop and loop.is_running():
-        # If there's a running loop, use create_task and gather
-        return asyncio.get_event_loop().run_until_complete(coro)
+        import nest_asyncio
+        nest_asyncio.apply()
+        return loop.run_until_complete(coro)
     else:
         return asyncio.run(coro)
 

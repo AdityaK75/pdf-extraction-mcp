@@ -1,3 +1,5 @@
+import nest_asyncio
+nest_asyncio.apply()
 import asyncio
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -31,5 +33,18 @@ async def main():
             )
             print(f"Extracted text:\n{result.content[0].text}")
 
+def run_async(coro):
+    import asyncio
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+    if loop and loop.is_running():
+        import nest_asyncio
+        nest_asyncio.apply()
+        return loop.run_until_complete(coro)
+    else:
+        return asyncio.run(coro)
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    run_async(main())

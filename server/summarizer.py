@@ -33,7 +33,11 @@ def summarize_text(text: Union[str, List[str]]) -> str:
     if isinstance(text, list):
         text = "\n".join(text)
     prompt = f"Summarize the following document or text chunks as concisely as possible:\n\n{text}"
-    return llm.invoke(prompt)
+    result = llm.invoke(prompt)
+    # If result is an object with 'content', extract it
+    if hasattr(result, 'content'):
+        result = result.content
+    return result
 
 if __name__ == "__main__":
     mcp.run(transport="stdio") 
