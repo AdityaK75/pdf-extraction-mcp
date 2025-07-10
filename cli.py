@@ -47,42 +47,54 @@ def run_async(coro):
         return asyncio.run(coro)
 
 def mcp_qna(pdf_path, question, top_k=5):
-    # 1. Chunk the PDF
-    chunks = run_async(call_mcp_tool(
-        "server/chunker.py",
-        "chunk_pdf",
+    # 1. Extract text from PDF
+    text_obj = run_async(call_mcp_tool(
+        "server/pdf_processing_server.py",
+        "extract_pdf_contents",
         {"pdf_path": pdf_path}
+    ))[0]
+    text = text_obj.text if hasattr(text_obj, "text") else str(text_obj)
+
+    # 2. Chunk the extracted text
+    chunks = run_async(call_mcp_tool(
+        "server/pdf_processing_server.py",
+        "chunk_text",
+        {"text": text}
     ))
-    # 2. Embed the chunks
-    embeddings = run_async(call_mcp_tool(
-        "server/embedder.py",
-        "embed_chunks",
-        {"text_chunks": chunks}
-    ))
-    # 3. Store in vector DB
+
+    # 3. Embed the chunks AND store in vector DB
     doc_id = os.path.splitext(os.path.basename(pdf_path))[0]
-    run_async(call_mcp_tool(
-        "server/vector_store.py",
-        "add_document",
-        {"doc_id": doc_id, "chunks": chunks, "embeddings": embeddings}
+    embed_result = run_async(call_mcp_tool(
+        "server/pdf_processing_server.py",
+        "embed_chunks",
+        {"text_chunks": chunks, "doc_id": doc_id}
     ))
+    # embed_result will be a confirmation message
+
     # 4. Embed the question
     q_embedding = run_async(call_mcp_tool(
-        "server/embedder.py",
+        "server/pdf_processing_server.py",
         "embed_chunks",
         {"text_chunks": [question]}
     ))[0]
+    if hasattr(q_embedding, "text"):
+        import json
+        q_embedding = json.loads(q_embedding.text)
+
     # 5. Retrieve relevant chunks
     relevant_chunks = run_async(call_mcp_tool(
         "server/vector_store.py",
         "search_embeddings",
         {"doc_id": doc_id, "query_embedding": q_embedding, "top_k": top_k}
     ))
+
     # 6. Call QnA service
     answer = run_async(call_mcp_tool(
         "server/qna.py",
         "answer_question",
-        {"question": question, "context": "\n".join(relevant_chunks)}
+        {"question": question, "context": "\n".join(
+            [c.text if hasattr(c, "text") else str(c) for c in relevant_chunks]
+        )}
     ))
     return answer
 

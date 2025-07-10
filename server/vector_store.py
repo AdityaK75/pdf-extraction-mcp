@@ -1,10 +1,7 @@
 from typing import List, Optional
 import chromadb
 from chromadb.config import Settings
-import os
 from pathlib import Path
-from mcp.server.fastmcp import FastMCP
-import json
 
 class VectorStore:
     def __init__(self, persist_directory: str = "vector_db"):
@@ -60,30 +57,3 @@ class VectorStore:
     def list_documents(self) -> List[str]:
         """List all document IDs in the store."""
         return [collection.name for collection in self.client.list_collections()] 
-
-mcp = FastMCP("vector_store")
-store = VectorStore()
-
-@mcp.tool()
-def add_document(doc_id: str, chunks: List[str], embeddings: List[str], metadata: Optional[dict] = None) -> str:
-    # embeddings are JSON strings, decode them
-    decoded_embeddings = [json.loads(e) if isinstance(e, str) else e for e in embeddings]
-    store.store_document(doc_id, chunks, decoded_embeddings, metadata)
-    return f"Document '{doc_id}' stored."
-
-@mcp.tool()
-def search_embeddings(doc_id: str, query_embedding: list, top_k: int = 5) -> List[str]:
-    # query_embedding is now a list of floats
-    return store.query_similar(doc_id, query_embedding, top_k)
-
-@mcp.tool()
-def delete_document(doc_id: str) -> str:
-    store.delete_document(doc_id)
-    return f"Document '{doc_id}' deleted."
-
-@mcp.tool()
-def list_documents() -> List[str]:
-    return store.list_documents()
-
-if __name__ == "__main__":
-    mcp.run(transport="stdio") 

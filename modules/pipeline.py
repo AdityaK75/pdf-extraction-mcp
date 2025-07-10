@@ -1,7 +1,5 @@
 import os
 import re
-import asyncio
-import nest_asyncio
 from mcp.client.stdio import stdio_client, StdioServerParameters
 from mcp.client.session import ClientSession
 import ast
@@ -67,7 +65,7 @@ class DocumentProcessingPipeline:
         print(f"[DEBUG] Number of chunks: {len(self.chunks)}")
         print(f"[DEBUG] First chunk: {self.chunks[0] if self.chunks else 'NO CHUNKS'}")
         print(f"[DEBUG] All chunks: {self.chunks}")
-        with tracer.start_as_current_span("Embed Chunks") as span:
+        with tracer.start_as_current_span("Embed Chunks and Store") as span:
             # Convert all chunks to plain strings
             plain_chunks = [
                 chunk.text if hasattr(chunk, "text") else
@@ -75,26 +73,11 @@ class DocumentProcessingPipeline:
                 str(chunk)
                 for chunk in self.chunks
             ]
-            self.embeddings = self.run_async(self._call_mcp_tool(
-                "server/embedder.py", "embed_chunks", {"text_chunks": plain_chunks}
+            embed_result = self.run_async(self._call_mcp_tool(
+                "server/pdf_processing_server.py", "embed_chunks", {"text_chunks": plain_chunks, "doc_id": self.doc_id}
             ))
-            span.set_attribute("embeddings_type", str(type(self.embeddings)))
-            span.set_attribute("embeddings_length", len(self.embeddings) if hasattr(self.embeddings, '__len__') else 'N/A')
-        print(f"[DEBUG] Embeddings type: {type(self.embeddings)}, length: {len(self.embeddings) if hasattr(self.embeddings, '__len__') else 'N/A'}")
-        print(f"[DEBUG] First embedding: {self.embeddings[0] if self.embeddings else 'NO EMBEDDINGS'}")
-        with tracer.start_as_current_span("Store in Vector DB") as span:
-            self.run_async(self._call_mcp_tool(
-                "server/vector_store.py", "add_document", {
-                    "doc_id": self.doc_id,
-                    "chunks": self.chunks,
-                    "embeddings": self.embeddings
-                }
-            ))
-            span.set_attribute("doc_id", self.doc_id)
-        collections = self.run_async(self._call_mcp_tool(
-            "server/vector_store.py", "list_documents", {}
-        ))
-        print(f"[DEBUG] Collections in vector store after add_document: {collections}")
+            span.set_attribute("embed_result", str(embed_result))
+        print(f"[DEBUG] Embed and store result: {embed_result}")
 
     def get_summary(self) -> str:
         text = self.text

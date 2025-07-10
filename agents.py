@@ -1,7 +1,6 @@
 from typing import List, Any, Optional
-from langchain.tools import Tool
+from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
-import asyncio
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 import json
@@ -41,7 +40,7 @@ class DocumentAgents:
             async def extract_async():
                 server_params = StdioServerParameters(
                     command="python",
-                    args=["server/pdfserver.py"],
+                    args=["server/pdf_processing_server.py"],
                 )
                 async with stdio_client(server_params) as (read, write):
                     async with ClientSession(read, write) as session:
@@ -64,7 +63,7 @@ class DocumentAgents:
             async def chunk_async():
                 server_params = StdioServerParameters(
                     command="python",
-                    args=["server/chunker.py"],
+                    args=["server/pdf_processing_server.py"],
                 )
                 async with stdio_client(server_params) as (read, write):
                     async with ClientSession(read, write) as session:
@@ -88,7 +87,7 @@ class DocumentAgents:
             async def embed_async():
                 server_params = StdioServerParameters(
                     command="python",
-                    args=["server/embedder.py"],
+                    args=["server/pdf_processing_server.py"],
                 )
                 async with stdio_client(server_params) as (read, write):
                     async with ClientSession(read, write) as session:
@@ -113,7 +112,7 @@ class DocumentAgents:
             async def summarize_async():
                 server_params = StdioServerParameters(
                     command="python",
-                    args=["server/summarizer.py"],
+                    args=["server/summarizer_qna_server.py"],
                 )
                 async with stdio_client(server_params) as (read, write):
                     async with ClientSession(read, write) as session:
@@ -134,7 +133,7 @@ class DocumentAgents:
         async def qna_async():
             server_params = StdioServerParameters(
                 command="python",
-                args=["server/qna.py"],
+                args=["server/summarizer_qna_server.py"],
             )
             async with stdio_client(server_params) as (read, write):
                 async with ClientSession(read, write) as session:
