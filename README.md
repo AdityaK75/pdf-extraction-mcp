@@ -1,60 +1,79 @@
-# MCP PDF Assistant
+# MCP PDF Assistant 📄🤖
 
-A modular, microservice-based PDF assistant using MCP (Machine Control Protocol) microservices for PDF extraction, chunking, embedding, vector storage, QnA, and summarization. Supports both CLI and Streamlit UI, with robust OpenTelemetry tracing (Arize Phoenix) and a LangChain-style pipeline abstraction.
+A modular, microservice-based PDF Assistant leveraging **Machine Control Protocol (MCP)** microservices for robust PDF **extraction, chunking, embedding, vector storage**, **QnA**, and **summarization**.
 
-## Features
-- **PDF Extraction, Chunking, Embedding, Vector Storage** via MCP microservices
-- **QnA and Summarization** with RAG and fallback to LLM
-- **Streamlit UI** and **CLI** interface
-- **OpenTelemetry Tracing** with Arize Phoenix
-- **Modular, observable, and extensible pipeline**
+Built with **modularity**, **observability**, and **extensibility** in mind. Offers both **CLI** and **Streamlit UI**. Powered by **OpenTelemetry** and **Arize Phoenix** for advanced monitoring and debugging.
 
-## Setup
-1. **Clone the repo:**
-   ```bash
-   git clone https://github.com/AdityaK75/pdf-extraction-mcp.git
-   cd pdf-extraction-mcp/mcp-pdf-ectractor
-   ```
-2. **Create and activate a virtual environment:**
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Set environment variables:**
-   - `PHOENIX_ENDPOINT` (Arize Phoenix collector endpoint)
-   - `PHOENIX_API_KEY` (if required)
-   - `OPENAI_API_KEY` (for LLM and embedding)
+---
 
-## Running the App
-### Start MCP Servers
+## 📚 Table of Contents
+
+- [Features](#features)
+- [Architecture & Components](#architecture--components)
+- [Workflow](#workflow)
+- [Setup & Installation](#setup--installation)
+- [Usage](#usage)
+  - [Starting MCP Servers](#starting-mcp-servers)
+  - [Streamlit UI](#streamlit-ui)
+  - [Command-line Interface (CLI)](#command-line-interface-cli)
+- [Environment Variables](#environment-variables)
+- [Project Structure](#project-structure)
+- [Extensibility & Observability](#extensibility--observability)
+- [Future Enhancements](#future-enhancements)
+- [License](#license)
+
+---
+
+## 🚀 Features
+
+- ✅ **Modular MCP microservices** for extraction, chunking, embedding, and vector storage.
+- 💬 **QnA & Summarization** powered by Retrieval-Augmented Generation (RAG) + fallback LLMs.
+- 🖥️ **Streamlit UI** for no-code operation.
+- 🛠️ **CLI** for scripting and automation workflows.
+- 📈 **Observability** via OpenTelemetry and Arize Phoenix.
+- 🧱 **Highly modular pipeline** for easy extension and debugging.
+
+---
+
+## 🧩 Architecture & Components
+
+| Component         | Responsibility                                          |
+|------------------|----------------------------------------------------------|
+| `extractor`      | PDF text & metadata extraction                          |
+| `chunker`        | Splits content into semantic chunks                     |
+| `embedder`       | Embeds chunks into vectors using LLM embeddings         |
+| `vector store`   | Stores and retrieves embeddings using similarity search |
+| `rag+llm`        | Handles QnA and summarization via RAG and LLM fallback  |
+| `app_streamlit.py` | Streamlit-based UI                                     |
+| `cli.py`         | CLI interface                                           |
+| `modules/`       | Core orchestration logic                                |
+| `server/`        | Hosts all microservices                                 |
+| `start_mcp_servers.sh` | Script to launch all services                     |
+
+---
+
+## 🔁 Workflow
+
+1. **Upload PDF** → Upload document via UI or CLI.
+2. **Extraction** → Extract text & metadata using `extractor`.
+3. **Chunking** → Segment text into meaningful units via `chunker`.
+4. **Embedding** → Convert chunks to vector embeddings using `embedder`.
+5. **Vector Storage** → Save vectors into a similarity-based vector store.
+6. **QnA / Summarization** → Retrieve and answer using RAG + fallback LLM.
+7. **Observability** → Monitor the entire pipeline using OpenTelemetry + Phoenix.
+
+---
+
+## ⚙️ Setup & Installation
+
 ```bash
-./start_mcp_servers.sh
-```
+# Clone the repo
+git clone https://github.com/AdityaK75/pdf-extraction-mcp.git
+cd pdf-extraction-mcp/mcp-pdf-ectractor
 
-### Run Streamlit UI
-```bash
-streamlit run app_streamlit.py
-```
+# Setup virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-### Run CLI
-```bash
-python cli.py
-```
-
-## Deployment
-- **Streamlit Community Cloud:** Push to GitHub, connect, and set env vars in the UI.
-- **Docker/Cloud:** Use a Dockerfile and set env vars as needed.
-
-## Project Structure
-- `app_streamlit.py` — Streamlit UI
-- `cli.py` — Command-line interface
-- `modules/` — Pipeline and orchestration logic
-- `server/` — MCP microservices (extractor, chunker, embedder, vector store, etc.)
-- `start_mcp_servers.sh` — Script to launch all MCP servers
-
-## License
-MIT
+# Install dependencies
+pip install -r requirements.txt
